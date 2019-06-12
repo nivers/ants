@@ -2,7 +2,27 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+const antsQuery = `
+  query {
+    ants {
+      name
+      length
+      color
+      weight
+    }
+  }
+`;
+const antsUrl = `https://antserver-blocjgjbpw.now.sh/graphql?query=${antsQuery}`;
+
 function App() {
+  const [ants, setAnts] = React.useState([]);
+
+  React.useEffect(() => {
+    fetch(antsUrl)
+      .then(response => response.json())
+      .then(responseObj => setAnts(responseObj.data.ants));
+  }, [setAnts]);
+
   return (
     <div className="App">
       <header className="App-header">
