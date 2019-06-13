@@ -14,14 +14,49 @@ const antsQuery = `
 `;
 const antsUrl = `https://antserver-blocjgjbpw.now.sh/graphql?query=${antsQuery}`;
 
+function generateAntWinLikelihoodCalculator() {
+  var delay = 7000 + Math.random() * 7000;
+  var likelihoodOfAntWinning = Math.random();
+
+  return function(callback) {
+    setTimeout(function() {
+      callback(likelihoodOfAntWinning);
+    }, delay);
+  };
+}
+
 function App() {
   const [ants, setAnts] = React.useState([]);
+  const [winProbabilities, setWinProbabilities] = React.useState({});
 
+  // fetch the ants
   React.useEffect(() => {
     fetch(antsUrl)
       .then(response => response.json())
-      .then(responseObj => setAnts(responseObj.data.ants));
+      .then(responseObj => {
+        const ants = responseObj.data.ants;
+
+        // set initial ants
+        setAnts(ants);
+      });
   }, [setAnts]);
+
+  // get win probablility once for each ant
+  React.useEffect(() => {
+    ants.forEach((ant, index) => {
+      generateAntWinLikelihoodCalculator()(winProbability => {
+        setWinProbabilities({
+          ...winProbabilities,
+          [ant]: winProbability
+        });
+      });
+    });
+  }, [ants, setWinProbabilities]);
+
+  const antsWithWinProbabilities = ants.map(ant => ({
+    ...ant,
+    winProbability: winProbabilities[ant]
+  }));
 
   return (
     <div className="App">
