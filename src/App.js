@@ -1,11 +1,10 @@
 import React from 'react';
-import logo from './logo.svg';
+import { Ant } from './Ant';
 
 import './App.css';
 
 const SET_ANTS = 'SET_ANTS';
 const SET_ANT_WIN_PROBABILITY = 'SET_ANT_WIN_PROBABILITY';
-
 
 const antsQuery = `
   query {
@@ -50,52 +49,39 @@ const antReducer = (state, action) => {
 function App() {
   const [ants, dispatchAntUpdate] = React.useReducer(antReducer, []);
 
-  // fetch the ants once
+  // fetch ants, set ant state
   React.useEffect(() => {
     fetch(antsUrl)
       .then(response => response.json())
       .then(responseObj => {
         const ants = responseObj.data.ants;
 
-        // set initial ants
         dispatchAntUpdate({
           type: SET_ANTS,
           ants
-        });
-
-        // get win probablility once for each ant
-        ants.forEach((ant, index) => {
-          generateAntWinLikelihoodCalculator()(winProbability => {
-            dispatchAntUpdate({
-              type: SET_ANT_WIN_PROBABILITY,
-              antName: ant.name,
-              winProbability,
-            })
-          });
         });
       });
   }, []);
 
   const antsSortedByWinProbability = ants.sort((ant1, ant2) => {
-    return Number(ant1.winProbability) < Number(ant2.winProbability) ? 1 : -1;
+    return Number(ant1.winProbability) <= Number(ant2.winProbability) ? 1 : -1;
   });
+
+  const setWinProbability = ant => () => {
+    generateAntWinLikelihoodCalculator()(winProbability => {
+      dispatchAntUpdate({
+        type: SET_ANT_WIN_PROBABILITY,
+        antName: ant.name,
+        winProbability
+      })
+    });
+  };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {antsSortedByWinProbability.map(ant => (
+        <Ant ant={ant} key={ant.name} setWinProbability={setWinProbability(ant)} />
+      ))}
     </div>
   );
 }
