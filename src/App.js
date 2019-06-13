@@ -1,6 +1,11 @@
 import React from 'react';
 import logo from './logo.svg';
+
 import './App.css';
+
+const SET_ANTS = 'SET_ANTS';
+const SET_ANT_WIN_PROBABILITY = 'SET_ANT_WIN_PROBABILITY';
+
 
 const antsQuery = `
   query {
@@ -25,11 +30,27 @@ function generateAntWinLikelihoodCalculator() {
   };
 }
 
-function App() {
-  const [ants, setAnts] = React.useState([]);
-  const [winProbabilities, setWinProbabilities] = React.useState({});
+const antReducer = (state, action) => {
+  switch (action.type) {
+    case SET_ANTS:
+      return action.ants.map(ant => ({ ...ant, winProbability: null }));
+    case SET_ANT_WIN_PROBABILITY:
+      return state.map(ant => {
+        const updatedAnt = { ...ant };
+        if (ant.name === action.antName) {
+          updatedAnt.winProbability = action.winProbability;
+        }
+        return updatedAnt;
+      });
+    default:
+      return state;
+  }
+};
 
-  // fetch the ants
+function App() {
+  const [ants, dispatchAntUpdate] = React.useReducer(antReducer, []);
+
+  // fetch the ants once
   React.useEffect(() => {
     fetch(antsUrl)
       .then(response => response.json())
@@ -37,26 +58,27 @@ function App() {
         const ants = responseObj.data.ants;
 
         // set initial ants
-        setAnts(ants);
-      });
-  }, [setAnts]);
+        dispatchAntUpdate({
+          type: SET_ANTS,
+          ants
+        });
 
-  // get win probablility once for each ant
-  React.useEffect(() => {
-    ants.forEach((ant, index) => {
-      generateAntWinLikelihoodCalculator()(winProbability => {
-        setWinProbabilities({
-          ...winProbabilities,
-          [ant]: winProbability
+        // get win probablility once for each ant
+        ants.forEach((ant, index) => {
+          generateAntWinLikelihoodCalculator()(winProbability => {
+            dispatchAntUpdate({
+              type: SET_ANT_WIN_PROBABILITY,
+              antName: ant.name,
+              winProbability,
+            })
+          });
         });
       });
-    });
-  }, [ants, setWinProbabilities]);
+  }, []);
 
-  const antsWithWinProbabilities = ants.map(ant => ({
-    ...ant,
-    winProbability: winProbabilities[ant]
-  }));
+  const antsSortedByWinProbability = ants.sort((ant1, ant2) => {
+    return Number(ant1.winProbability) < Number(ant2.winProbability) ? 1 : -1;
+  });
 
   return (
     <div className="App">
