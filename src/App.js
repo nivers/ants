@@ -79,7 +79,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-header">Ants Odds Sheet</div>
+      <div className="App-header">{'Ants Odds Sheet'}</div>
       {antsSortedByWinProbability.map(ant => (
         <Ant ant={ant} key={ant.name} setWinProbability={setWinProbability(ant)} />
       ))}
