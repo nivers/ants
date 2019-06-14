@@ -1,5 +1,7 @@
 import React from 'react';
 
+import './Ant.css';
+
 export function Ant(props) {
   const { ant, setWinProbability } = props;
 
@@ -10,9 +12,12 @@ export function Ant(props) {
     setWinProbability();
   };
 
+  const antDescription = `${ant.length}cm, ${ant.color.toLowerCase()}`;
+
   let winProbabilityContent;
   if (ant.winProbability) {
-    winProbabilityContent = `${ant.winProbability.toFixed(2) * 100}%`;
+    const winPercent = ant.winProbability * 100;
+    winProbabilityContent = `${winPercent.toFixed(2)}%`;
   } else if (isLoading) {
     winProbabilityContent = 'Loading odds ...';
   } else {
@@ -24,9 +29,17 @@ export function Ant(props) {
   }
 
   return (
-    <div>
-      {ant.name}
-      {winProbabilityContent}
+    <div className="antRow">
+      <span className="antName">
+        {ant.name}
+      </span>
+      {' - '}
+      <span className="antDescription">
+        {antDescription}
+      </span>
+      <div className="winProbabilityContent">
+        {winProbabilityContent}
+      </div>
     </div>
   );
 }
