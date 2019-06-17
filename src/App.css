@@ -6,3 +6,7 @@
   font-size: calc(10px + 2vmin);
   margin-bottom: 18px;
 }
+
+.get-odds-button {
+    margin-bottom: 9px;
+}

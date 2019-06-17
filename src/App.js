@@ -1,10 +1,11 @@
 import React from 'react';
-import { Ant } from './Ant';
+import { Ant, ODDS_LOADED, ODDS_LOADING } from './Ant';
 
 import './App.css';
 
+//actions
 const SET_ANTS = 'SET_ANTS';
-const SET_ANT_WIN_PROBABILITY = 'SET_ANT_WIN_PROBABILITY';
+const UPDATE_ANT = 'SET_ANT_WIN_PROBABILITY';
 
 const antsQuery = `
   query {
@@ -33,13 +34,16 @@ const antReducer = (state, action) => {
   switch (action.type) {
     case SET_ANTS:
       return action.ants.map(ant => ({ ...ant, winProbability: null }));
-    case SET_ANT_WIN_PROBABILITY:
+    case UPDATE_ANT:
       return state.map(ant => {
-        const updatedAnt = { ...ant };
-        if (ant.name === action.antName) {
-          updatedAnt.winProbability = action.winProbability;
+        if (action.antName === ant.name) {
+          return {
+            ...ant,
+            ...action.updateFields,
+          };
+        } else {
+          return ant;
         }
-        return updatedAnt;
       });
     default:
       return state;
@@ -67,21 +71,37 @@ function App() {
     return Number(ant1.winProbability) <= Number(ant2.winProbability) ? 1 : -1;
   });
 
-  const setWinProbability = ant => () => {
-    generateAntWinLikelihoodCalculator()(winProbability => {
-      dispatchAntUpdate({
-        type: SET_ANT_WIN_PROBABILITY,
-        antName: ant.name,
-        winProbability
-      })
+  const loadAntsOdds = () => {
+    ants.forEach(ant => {
+        // mark each ant as loading
+        dispatchAntUpdate({
+            type: UPDATE_ANT,
+            antName: ant.name,
+            updateFields: { status: ODDS_LOADING }
+        });
+
+        // generate odds for each ants, update when odds generated
+        generateAntWinLikelihoodCalculator()(winProbability => {
+            dispatchAntUpdate({
+                type: UPDATE_ANT,
+                antName: ant.name,
+                updateFields: {
+                  status: ODDS_LOADED,
+                  winProbability
+                }
+            });
+        });
     });
   };
 
   return (
     <div className="App">
       <div className="App-header">{'Ants Odds Sheet'}</div>
+      <button className="get-odds-button" onClick={loadAntsOdds}>
+        {'Get odds!'}
+      </button>
       {antsSortedByWinProbability.map(ant => (
-        <Ant ant={ant} key={ant.name} setWinProbability={setWinProbability(ant)} />
+        <Ant ant={ant} key={ant.name} />
       ))}
     </div>
   );
