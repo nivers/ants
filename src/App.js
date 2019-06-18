@@ -52,6 +52,7 @@ const antReducer = (state, action) => {
 
 function App() {
   const [ants, dispatchAntUpdate] = React.useReducer(antReducer, []);
+  const [getOddsClicked, setGetOddsClicked] = React.useState(false);
 
   // fetch ants, set ant state
   React.useEffect(() => {
@@ -73,12 +74,7 @@ function App() {
 
   const loadAntsOdds = () => {
     ants.forEach(ant => {
-        // mark each ant as loading
-        dispatchAntUpdate({
-            type: UPDATE_ANT,
-            antName: ant.name,
-            updateFields: { status: ODDS_LOADING }
-        });
+        setGetOddsClicked(true);
 
         // generate odds for each ants, update when odds generated
         generateAntWinLikelihoodCalculator()(winProbability => {
@@ -94,12 +90,30 @@ function App() {
     });
   };
 
+  // loading if button clicked, but not all ants have odds yet
+  const oddsLoading = getOddsClicked && ants.find(ant => !ant.winProbability);
+
+  let getOddsContent;
+  if (!getOddsClicked) {
+    getOddsContent = (
+      <button onClick={loadAntsOdds}>
+        {'Get odds!'}
+      </button>
+    );
+  } else if (oddsLoading) {
+    getOddsContent = (
+      <span>
+        {'Odds Loading ...'}
+      </span>
+    );
+  }
+
   return (
     <div className="App">
       <div className="App-header">{'Ants Odds Sheet'}</div>
-      <button className="get-odds-button" onClick={loadAntsOdds}>
-        {'Get odds!'}
-      </button>
+      <div className="get-odds-content">
+        {getOddsContent}
+      </div>
       {antsSortedByWinProbability.map(ant => (
         <Ant ant={ant} key={ant.name} />
       ))}

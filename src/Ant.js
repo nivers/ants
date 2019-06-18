@@ -9,12 +9,10 @@ export function Ant(props) {
   const { ant } = props;
   const antDescription = `${ant.length}cm, ${ant.color.toLowerCase()}`;
 
-  let winProbabilityContent = null;
-  if (ant.status === ODDS_LOADED && ant.winProbability) {
+  let winProbabilityDisplay = null;
+  if (ant.winProbability) {
     const winPercent = ant.winProbability * 100;
-    winProbabilityContent = `${winPercent.toFixed(2)}%`;
-  } else if (ant.status === ODDS_LOADING) {
-    winProbabilityContent = 'Loading odds ...';
+    winProbabilityDisplay = `${winPercent.toFixed(2)}%`;
   }
 
   return (
@@ -27,7 +25,7 @@ export function Ant(props) {
         {antDescription}
       </span>
       <div className="winProbabilityContent">
-        {winProbabilityContent}
+        {winProbabilityDisplay}
       </div>
     </div>
   );
